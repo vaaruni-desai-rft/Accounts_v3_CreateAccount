@@ -1,0 +1,18 @@
+BROKER SCHEMA Accounts
+PATH com.financialandrisk;
+
+CREATE COMPUTE MODULE Accounts_v3_CreateAccount_Validation
+	DECLARE CICSTransactionId EXTERNAL CHARACTER ' ';
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		--Copy Entire Message
+		SET OutputRoot = InputRoot;
+		-- Copy LocalEnvironment variables
+		SET OutputLocalEnvironment = InputLocalEnvironment;
+		--Validate Refernce Ids and store the standard inputs to Environment Variables
+		CALL ValidateAndStoreStandardInputs(InputRoot, Environment, InputLocalEnvironment);
+		--Assign CICS TransactionId from User Defined Property
+		SET Environment.Variables.CICSTransactionId = CICSTransactionId;
+		RETURN TRUE;
+	END;
+END MODULE;

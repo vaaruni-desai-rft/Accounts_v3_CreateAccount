@@ -1,0 +1,231 @@
+BROKER SCHEMA Accounts
+PATH com.financialandrisk.messageutils,com.financialandrisk.string,com.thomsonreuters.enumtrans;
+
+CREATE COMPUTE MODULE CreateAccount_StoreVariables
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputLocalEnvironment = InputLocalEnvironment;										
+		SET OutputRoot.Properties =	InputRoot.Properties;
+		SET OutputRoot.Properties.MessageSet 	='WB02045I.xsd';
+		SET OutputRoot.Properties.MessageType = '{}:WB02045IPARAMETERS';	
+		SET OutputRoot.Properties.MessageFormat = 'BINARY';
+		SET Environment.Variables.FirmId                = InputRoot.HTTPInputHeader.Firmid;
+		SET Environment.Variables.InternalReferenceId   = InputRoot.HTTPInputHeader.Internalreferenceid;
+		SET Environment.Variables.ExternalReferenceId   = InputRoot.RequestHeader.ExternalReferenceId;
+		SET Environment.Variables.RequestHeader 		= InputRoot.RequestHeader;
+		SET Environment.Variables.FirmNo                = InputLocalEnvironment.Variables.TRConfig.Context.BetaFirmNumber;
+		SET Environment.Variables.TRConfig.Context      = InputLocalEnvironment.Variables.TRConfig.Context;
+		SET Environment.Variables.Properties          	= InputRoot.Properties;
+		SET Environment.Variables.HTTPInputHeader     	= InputRoot.HTTPInputHeader;
+		
+		--STORE JDBC Provider details
+		SET OutputLocalEnvironment.DB2Schema = InputLocalEnvironment.Variables.TRConfig.Context.DB2HOSTSchema;
+		SET OutputLocalEnvironment.DB2JdbcProvider = InputLocalEnvironment.Variables.TRConfig.Context.DB2HOSTConfigurableServiceName;
+		
+		--outputroot references
+		DECLARE Env REFERENCE TO Environment.Variables;
+		SET Env.FirmNo					= InputLocalEnvironment.Variables.TRConfig.Context.BetaFirmNumber;				
+		SET Env.TRConfig.Context     	= InputLocalEnvironment.Variables.TRConfig.Context;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN ('DFDL') NAME 'DFDL';
+
+		CREATE FIELD OutputRoot.DFDL.WEBDEACT2PARAMETERS.DE_COMM_AREA;
+		DECLARE OutCommParms REFERENCE TO OutputRoot.DFDL.WEBDEACT2PARAMETERS.DE_COMM_AREA;
+		
+		CREATE FIELD OutputRoot.DFDL.WEBDEACT2PARAMETERS.DE_ACCT_LAYOUT;
+		DECLARE OutParms REFERENCE TO OutputRoot.DFDL.WEBDEACT2PARAMETERS.DE_ACCT_LAYOUT;
+		
+		--inputroot reference		
+		DECLARE jSONInput REFERENCE TO InputRoot.JSON.Data.createAccountRequest;
+		
+		--set DE_COMM_AREA fields
+		SET OutCommParms.DE_FIRM 								= Environment.Variables.FirmNo;
+		SET OutCommParms.DE_SUB 								= jSONInput.subFirm;
+		SET OutCommParms.DE_REQ.DE_APPLICATION 					= 'ACCT';
+		SET OutCommParms.DE_REQ.DE_FUNCTION 					= ProcessingInstructionIn(jSONInput.processingInstruction);
+		SET OutCommParms.DE_USER_INFO.DE_SECURITY_LEVEL 		= 'A';
+		SET OutCommParms.DE_ERROR_TO_TERM_SW 					= 'N';
+		SET OutCommParms.DE_ERROR_OPTION 			 			= 'R';
+		SET OutCommParms.DE_ORIGINATOR 			 				= 'WWS';
+		SET OutCommParms.DE_KEY_AREA.DE_SEARCH_FORMAT 			= 'A';
+		SET OutCommParms.DE_KEY_AREA.DE_KEY 					= jSONInput.accountNumber;
+		
+		--set ACCT_LAYOUT fields
+		--references to input fields
+		DECLARE acctClass REFERENCE TO jSONInput.accountClassification;
+		DECLARE acctHold REFERENCE TO jSONInput.accountHolderInformation;
+		DECLARE contact REFERENCE TO acctHold.contactInformation;
+		DECLARE address REFERENCE TO acctHold.contactInformation.addressInformation;
+		DECLARE phone REFERENCE TO acctHold.contactInformation.phoneList.Item.phoneInformation;
+		DECLARE person REFERENCE TO acctHold.personalInformation;
+		DECLARE acctParms REFERENCE TO jSONInput.accountingParameters;
+		DECLARE instacct REFERENCE TO jSONInput.institutionalAccountInformation;
+		DECLARE rtmtacct REFERENCE TO jSONInput.retirementAccountInformation;
+		DECLARE mutfund REFERENCE TO jSONInput.mutualFundInformation;
+		DECLARE monmar REFERENCE TO jSONInput.moneyMarketFundInformation;
+		DECLARE adParms REFERENCE TO jSONInput.advisorParametersandRestrictions;
+		DECLARE tradeParms REFERENCE TO jSONInput.tradeParametersandRestrictions;
+		DECLARE stmtParms REFERENCE TO jSONInput.statementandConfirmations;	
+			
+		SET OutParms.ACCT_ACCT_NO				= jSONInput.accountNumber;
+		SET OutParms.ACCT_REP 					= jSONInput.repCode;
+		SET OutParms.ACCT_ZIP_CODE 				= address.PostalCode;
+		SET OutParms.ACCT_ZIP_REST 				= address.PostalCodeextension;
+		SET OutParms.ACCT_FOREIGN_ZIP 			= address.ForeignPostalCode;	
+		SET OutParms.ACCT_BROKR 				= jSONInput.dTCClearanceNumber;
+		SET OutParms.fill_6.ACCT_LINE_ONE 		= address.NameandAddressLine1;
+		SET OutParms.fill_6.ACCT_LINE_TWO 		= address.NameandAddressLine2;  
+		SET OutParms.fill_6.ACCT_LINE_THREE 	= address.NameandAddressLine3;
+		SET OutParms.fill_6.ACCT_LINE_FOUR 		= address.NameandAddressLine4;
+		SET OutParms.fill_6.ACCT_LINE_FIVE 		= address.NameandAddressLine5; 
+		SET OutParms.fill_6.ACCT_LINE_SIX  		= address.NameandAddressLine6;
+		SET OutParms.ACCT_PHONE 				= phone.Number;
+		SET OutParms.ACCT_PHONE2 				= phone.Number;
+		SET OutParms.ACCT_PHONE3 				= phone.Number;
+		SET OutParms.ACCT_STATE_CODE			= address.State;
+		SET OutParms.ACCT_CNTRY 				= address.Country;
+		SET OutParms.ACCT_RES_ID 				= address.ResidentCountry;
+		SET OutParms.ACCT_PROV 					= address.CanadianProvinceCode;
+		SET OutParms.ACCT_CITY 					= address.City;
+		SET OutParms.ACCT_NOID					= NoTaxIdOut(person.noTaxIDIndication);		
+		SET OutParms.ACCT_ID 					= person.socialSecurityNumber;
+		SET OutParms.ACCT_OPEN_CYMD 			= jSONInput.openDate;
+		SET OutParms.ACCT_MARGSI 				= acctClass.iRAType;	
+		SET OutParms.ACCT_TEFRA 				= acctParms.tefra;
+		SET OutParms.ACCT_PRINCIPAL 			= acctParms.directPrincipalPaymentstoFreeCredit;
+		SET OutParms.ACCT_INST 					= AccountTypeIn(acctClass.typeofAccount);
+		SET OutParms.ACCT_NYTAX  				= tradeParms.newYorkTaxChargeApplicable;
+		SET OutParms.ACCT_INVOBJ  				= jSONInput.investmentObjective;
+		SET OutParms.ACCT_DIR_SW 				= DirectorAccountIn(acctClass.directorAccount);	
+		SET OutParms.ACCT_DISCL_CODE  			= instacct.beneficialOwnerDisclosure;
+		SET OutParms.ACCT_DISCR  				= tradeParms.discretionaryAuthority;
+		SET OutParms.ACCT_OPTN_I_O  			= tradeParms.optionTradingLevel.Authorization;	
+		SET OutParms.ACCT_AVG_PRICE  			= tradeParms.specialHandlingInstruction;
+		SET OutParms.ACCT_OUT_MMF  				= monmar.outsideMoneyMarketFund;	
+		SET OutParms.ACCT_INTR  				= acctParms.debitInterestRate;
+		SET OutParms.ACCT_MARG_INT_CHG  		= acctParms.noMarginInterestPosted;	
+		SET OutParms.ACCT_SEGREGATION 			= jSONInput.segregation;
+		SET OutParms.ACCT_CRINT  				= acctParms.creditInterestRate;
+		SET OutParms.ACCT_CRINT_NOPOST  		= acctParms.noCreditInterestPosted;	
+		SET OutParms.ACCT_ERISA_CODE  			= mutfund.managedERISAAccountType;	
+		SET OutParms.ACCT_NO_CFM  				= stmtParms.confirmInstructions;
+		SET OutParms.ACCT_COMM_SCHED_STK 		= tradeParms.commissionSchedulesandDiscounts.commissionSchedule;		
+--		SET OutParms.ACCT_COMM_SCHED_BND 		= tradeParms.commissionSchedulesandDiscounts.commissionSchedule;
+--		SET OutParms.ACCT_COMM_SCHED_OPT 		= tradeParms.commissionSchedulesandDiscounts.commissionSchedule;	
+		SET OutParms.ACCT_STKDISCNT  			= tradeParms.commissionSchedulesandDiscounts.discount;	
+		SET OutParms.ACCT_CFM  					= stmtParms.additionalConfirmCopies;	
+		SET OutParms.ACCT_STAT  				= stmtParms.additionalStatementCopies;
+		SET OutParms.ACCT_MANO  				= jSONInput.assetManagementAccountNumber;	
+		SET OutParms.ACCT_RESTRICT_IND  		= tradeParms.tradeRestricted;
+		SET OutParms.ACCT_MMFSVCFEE  			= monmar.chargedShareholderFee;	
+		SET OutParms.ACCT_DOWNLOAD_SW 			= jSONInput.accountAccessIndicator;	
+		SET OutParms.ACCT_INST_OVERRIDE  		= instacct.foreignIndividualType; 	
+		SET OutParms.ACCT_POSTAGE_AMT  		= tradeParms.postageFee;			
+		SET OutParms.ACCT_IRS_NALINE1  		= person.iRSNameLines.Item.nameLines;	
+		SET OutParms.ACCT_IRS_NALINE2  		= person.iRSNameLines.Item.nameLines;
+		SET OutParms.ACCT_ACCT_CAT			= acctClass.accountCategory;
+		SET OutParms.ACCT_TRAN_LVL  			= acctClass.transactionLevel;	
+		SET OutParms.ACCT_ACCT_TYPE_IND  		= tradeParms.accountTypeInstructions;	
+	  	SET OutParms.ACCT_STMT_CODE  			= stmtParms.statementCode;	
+		SET OutParms.ACCT_NETWORK_ELIG  		= mutfund.networkEligibility;	
+		SET OutParms.ACCT_MMF_SWEEP  			= monmar.sweepInstruction;	
+		SET OutParms.ACCT_CASH_DIV  			= monmar.requestedCashDistributions;
+		SET OutParms.ACCT_CASH_ONLY  			= monmar.sweepCashOnly;
+--		SET OutParms.ACCT_MMF_FUNDS.ACCT-MMF-FUND-1-X, ACCT-MMF-FUND-2-X,ACCT-MMF-FUND-3-X
+		SET OutParms.ACCT_MGT_GROUP  			= mutfund.managementGroup; 	
+		SET OutParms.ACCT_MAIL_DIVERT_CD  		= stmtParms.mailingGroupCode;	
+		SET OutParms.ACCT_PREVENT_PRIN_TRADES  = tradeParms.principalTradesRestricted;	
+		SET OutParms.ACCT_INVESTOR_CODE  		= tradeParms.investorCode;	
+		SET OutParms.ACCT_DSC_SHR_EXEMPT_SW 	= tradeParms.discountSharingExemption;
+		SET OutParms.ACCT_PRODUCT_CLASS 		= acctClass.productClass;	
+		SET OutParms.ACCT_NO_REBATE_IND  		= mutfund.noCommissionRebate;	
+		SET OutParms.ACCT_NAV  				= mutfund.nAVReasonCode;	
+		SET OutParms.ACCT_NAVR_SW  			= mutfund.nAVReasonCodeOverrideIndicator;		
+		SET OutParms.ACCT_NCHG_SEC_FEE  		= tradeParms.transactionFeeApplicable;
+		SET OutParms.ACCT_NASDAQ  				= jSONInput.dealerNasdaqSymbol;
+		SET OutParms.ACCT_GENERIC_USER_FLD  	= adParms.payoutSchedule;	
+		SET OutParms.ACCT_REINVEST 			= acctParms.dividendReinvestmentInstruction;	
+		SET OutParms.ACCT_CASH_DR_OVRD 		= acctParms.cashDebitOverride;
+		SET OutParms.ACCT_EMP_CLASS_CODE 		= acctClass.employeeClassCode;
+		SET OutParms.ACCT_GROUPNO 			= adParms.repGroupNumber;	
+		SET OutParms.ACCT_IPO_ELIGIBLE 		= tradeParms.iPOEligible;	
+		SET OutParms.ACCT_AVG_PRICE_IND 		= tradeParms.useAveragePricing;
+		SET OutParms.ACCT_MMF_SUPPRESS 		= monmar.statementInstructions;
+		SET OutParms.ACCT_ALPHA_KEYS.ACCT_ALPHA_KEY1	= acctHold.accountHolders.Item.accountHolder; 
+		SET OutParms.ACCT_ALPHA_KEYS.ACCT_ALPHA_KEY2 	= acctHold.accountHolders.Item.accountHolder; 
+		SET OutParms.ACCT_ALPHA_KEYS.ACCT_ALPHA_KEY3 	= acctHold.accountHolders.Item.accountHolder; 
+		SET OutParms.ACCT_ALPHA_KEYS.ACCT_ALPHA_KEY4 	= acctHold.accountHolders.Item.accountHolder; 
+		SET OutParms.ACCT_ALPHA_KEYS.ACCT_ALPHA_KEY5 	= acctHold.accountHolders.Item.accountHolder;
+		SET OutParms.ACCT_MMF_INIT_PURCH 		= monmar.initialPurchaseMade;
+		SET OutParms.ACCT_IRAS_IRA_TYPE 		= rtmtacct.retirementPlanType;	
+		SET OutParms.ACCT_IRASREF_ACCT 		= rtmtacct.primaryRetirementAccount;
+		SET OutParms.ACCT_IRAS_FEE_SCHEDULE 	= rtmtacct.feeSchedule;	
+		SET OutParms.ACCT_IRAS_FEE_STATUS 	= rtmtacct.feeStatus;	
+		SET OutParms.ACCT_IRAS_PRI_SEC_CODE  	= rtmtacct.primaryRetirementAccountIndication;
+		SET OutParms.ACCT_MMF_FUND_SYM  	= monmar.primaryFundSymbol;	
+		SET OutParms.ACCT_MMF_SELL_FIRST_SYM  		= monmar.sellFirstFund;
+		SET OutParms.ACCT_BYPASS_REJECT_ACAT 		= jSONInput.rejectTransferIndication;	
+		SET OutParms.ACCT_BRR_ELIGIBLE_SW  		= tradeParms.booksandRecordsReconfirmationLetter;
+		SET OutParms.ACCT_FIDUCIARY 			= acctClass.fiduciary;
+		SET OutParms.ACCT_EXEMPTION 			= acctClass.fiduciaryExemptionCode;	
+		SET OutParms.ACCT_AED_IND  			= stmtParms.hardcopyProspectusSent;
+		SET OutParms.ACCT_SOCIAL_CODE 			= acctClass.socialDesignation;
+		SET OutParms.ACCT_INST_ACCT_IND     	= instacct.institutionalQualifier;
+		SET OutParms.ACCT_INV_OPTION_CODE 		= tradeParms.investorOptionCode;
+		SET OutParms.ACCT_NATURAL_PERSON  		= person.naturalPersonIndicator;
+		SET OutParms.ACCT_MULTI_CNY_IND 		= acctParms.multicurrencyInstruction;
+		SET OutParms.ACCT_ACT_CMP_RVW_IND  	= jSONInput.compromiseReview;
+		SET OutParms.ACCT_SUB_NO 				= jSONInput.subFirmNumber;
+
+--			--SET OutParms.ACCT-CLASS.ACCT-INST = acctClass.nonCustomerAccount;
+--			--SET OutParms.ACCT-CLASS.ACCT-INST = acctClass.institutionalMasterAccount;	
+--			--SET OutParms.ACCT-CLASS.ACCT-INST = acctClass.accountClassification;
+--			SET OutParms.ACCT_FOREIGN_ZIP  	= address.BypassPostalCodeExtension;
+--			SET OutParms.ACCT_TYPE  			= phone.Type;
+--			SET OutParms.ACCT_ID  				= person.taxID;
+--			SET OutParms.ACCT2_BIRTHDATE  		= person.dateofBirth;	
+--			SET OutParms.ACCT_AVG_PRICEAccount  = jSONInput.automaticallyNetted;
+--			--SET OutParms.ACCT-MULTI-CNY-IND 	= acctParms.standingInstructionsList.Item.standingInstructions.type;	
+--			--SET OutParms.ACCT-MULTI-CNY-IND 	= acctParms.standingInstructionsList.Item.standingInstructions.dispositionOfStock;
+--			--SET OutParms.ACCT-MULTI-CNY-IND 	= acctParms.standingInstructionsList.Item.standingInstructions.dispositionOfCash;
+--			SET OutParms.ACCT_INST_OVERRIDE  	= instacct.foreignInstitutionType;	
+--			SET OutParms.ACCT_INST_OVERRIDE  	= instacct.corporationType;
+--			SET OutParms.ACCT_INST_OVERRIDE  	= instacct.generate1099Summary;
+--			--SET OutParms.ACCT_MMFSVCFEE  	= adParms.stateRegistrationOverride;
+--			SET OutParms.ACCT2_REP_TRADING_RESTR = adParms.tradingRestriction;	
+--			SET OutParms.ACCT2_REP_EQDIV_RESTR 	 = adParms.equityDividendsReinvestmentRestriction;	
+--			SET OutParms.ACCT2_REP_MFDIV_RESTR 	 = adParms.mutualFundsDividendsReinvestmentRestriction;	
+--			--SET OutParms.ACCT2-REP-MFDIV-RESTR = adParms.periodicInvestmentRestriction;	
+--			SET OutParms.ACCT_RESTRICT_CYMD  		= tradeParms.tradeRestrictedThroughDate; 	
+--			--SET OutParms.ACCT-IPO-ELIGIBLE-X 		= tradeParms.commissionSchedulesandDiscounts.ScheduleInformation;	
+--			--SET OutParms.ACCT-IPO-ELIGIBLE-X 		= tradeParms.commissionSchedulesandDiscounts.SecurityType; 
+--			SET OutParms.ACCT2_COMMISSION_OVERRIDE 	= tradeParms.canOverrideCommissionDiscount;		
+	END;
+END MODULE;
+
+
+CREATE PROCEDURE NoTaxIdOut (IN ParmIn CHARACTER)
+RETURNS CHARACTER
+BEGIN
+	CASE ParmIn
+	WHEN 'HasBeenNotifiedByIRS' THEN
+		RETURN 'S';
+	WHEN 'W9FormNotOnFile' THEN
+		RETURN 'N';	
+	WHEN 'CustomerNoID' THEN
+		RETURN 'C';
+	END CASE;
+END;
+
+CREATE PROCEDURE DirectorAccountIn (IN ParmIn BOOLEAN)
+RETURNS CHARACTER
+BEGIN
+	CASE ParmIn
+	WHEN true THEN
+		RETURN 'Y';
+	WHEN false THEN
+		RETURN 'N';
+	END CASE;
+END;
+
+

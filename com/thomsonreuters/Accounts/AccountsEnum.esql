@@ -1,0 +1,18 @@
+BROKER SCHEMA com.thomsonreuters.Accounts
+
+
+CREATE PROCEDURE GetLastActivityMonth (IN ParmIn INT)
+    RETURNS INT
+	BEGIN
+        DECLARE actMonth INT;
+        SET actMonth = 	ParmIn /100;
+        RETURN actMonth;
+	END;
+	
+	CREATE PROCEDURE GetLastActivityYear (IN ParmIn INT)
+    RETURNS INT
+	BEGIN
+        DECLARE actYear INT;
+        SET actYear = 	MOD(ParmIn, 100);
+        RETURN actYear;
+	END;

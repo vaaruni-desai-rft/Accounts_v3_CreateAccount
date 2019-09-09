@@ -1,0 +1,16 @@
+
+
+Importing file: C:\Users\vdesaiadmin\Desktop\DEACT2.CPY
+
+CTDI0234E Error occurred while importing file "DEACT2.CPY".
+The source file contains errors, details are: Possible reasons for failure:
+1. Syntax errors were found in the source. If the file is from the workspace, check the 'Problems' view for the list of errors.
+2. DEACT2.CPY is expected to have just 01 level data structures or 77 level elementary data item definition(s), based on its file extension.You can change the file extension support by going into the "More COBOL options" tab of the COBOL importer preferences page (Window -> Preferences -> Importer -> COBOL). Please correct the error and try importing the file again.
+CTDI0234E Error occurred while importing file "DEACT2.CPY".
+The source file contains errors, details are: Possible reasons for failure:
+1. Syntax errors were found in the source. If the file is from the workspace, check the 'Problems' view for the list of errors.
+2. DEACT2.CPY is expected to have just 01 level data structures or 77 level elementary data item definition(s), based on its file extension.You can change the file extension support by going into the "More COBOL options" tab of the COBOL importer preferences page (Window -> Preferences -> Importer -> COBOL).
+Line No : 71  IGYDS1176-E The first level-number was not 01 for item "DE-ACCT-KEY-AREA".  A level-number of 01 was assumed.
+Line No : 71  IGYDS1052-E Group item "DE-ACCT-KEY-AREA" contained the "PICTURE" clause.  The clause was discarded.
+Line No : 72  IGYDS1066-S "REDEFINES" object "DE-ACCT-KEY-AREA" was not the immediately preceding level-4 data item.  The "REDEFINES" clause was discarded.
+ Please correct the error and try importing the file again.

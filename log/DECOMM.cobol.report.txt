@@ -1,0 +1,14 @@
+
+
+Importing file: C:\Users\vdesaiadmin\Desktop\DECOMM.CPY
+
+CTDI0234E Error occurred while importing file "DECOMM.CPY".
+The source file contains errors, details are: Possible reasons for failure:
+1. Syntax errors were found in the source. If the file is from the workspace, check the 'Problems' view for the list of errors.
+2. DECOMM.CPY is expected to have just 01 level data structures or 77 level elementary data item definition(s), based on its file extension.You can change the file extension support by going into the "More COBOL options" tab of the COBOL importer preferences page (Window -> Preferences -> Importer -> COBOL). Please correct the error and try importing the file again.
+CTDI0234E Error occurred while importing file "DECOMM.CPY".
+The source file contains errors, details are: Possible reasons for failure:
+1. Syntax errors were found in the source. If the file is from the workspace, check the 'Problems' view for the list of errors.
+2. DECOMM.CPY is expected to have just 01 level data structures or 77 level elementary data item definition(s), based on its file extension.You can change the file extension support by going into the "More COBOL options" tab of the COBOL importer preferences page (Window -> Preferences -> Importer -> COBOL).
+Line No : 33  IGYDS1176-E The first level-number was not 01 for item "DE-COMM-AREA".  A level-number of 01 was assumed.
+ Please correct the error and try importing the file again.

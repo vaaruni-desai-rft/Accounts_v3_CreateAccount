@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCICSIPICRequest.msgnode="ComIbmCICSIPICRequest.msgnode" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:com_financialandrisk_AssignUserAndTranId.subflow="com/financialandrisk/AssignUserAndTranId.subflow" xmlns:com_financialandrisk_errorhandler_CommonCICSErrorHandler.subflow="com/financialandrisk/errorhandler/CommonCICSErrorHandler.subflow" xmlns:com_financialandrisk_messageutils_GetAndTrackCICSMessages.subflow="com/financialandrisk/messageutils/GetAndTrackCICSMessages.subflow" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="Accounts/Accounts_v3_Create_CallCICSDEACCT.subflow" nsPrefix="Accounts_Accounts_v3_Create_CallCICSDEACCT.subflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" useDefaults="true" udpSupport="true">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <translation xmi:type="utility:TranslatableString" key="Accounts_v3_Create_CallCICSDEACCT" bundleName="Accounts/Accounts_v3_Create_CallCICSDEACCT" pluginId="Accounts_v3_CreateAccount"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/Accounts_v3_CreateAccount/icons/full/obj16/Accounts_v3_Create_CallCICSDEACCT.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/Accounts_v3_CreateAccount/icons/full/obj30/Accounts_v3_Create_CallCICSDEACCT.gif"/>
+    <composition>
+      <nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input" location="95,236">
+        <translation xmi:type="utility:TranslatableString" key="InTerminal.Input" bundleName="Accounts/Accounts_v3_Create_CallCICSDEACCT" pluginId="Accounts_v3_CreateAccount"/>
+      </nodes>
+      <nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output" location="854,237">
+        <translation xmi:type="utility:TranslatableString" key="OutTerminal.Output" bundleName="Accounts/Accounts_v3_Create_CallCICSDEACCT" pluginId="Accounts_v3_CreateAccount"/>
+      </nodes>
+      <nodes xmi:type="com_financialandrisk_AssignUserAndTranId.subflow:FCMComposite_1" xmi:id="FCMComposite_1_2" location="182,239">
+        <translation xmi:type="utility:ConstantString" string="AssignUserAndTranId"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCICSIPICRequest.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="350,240" cicsServer="CICSCONNECT01" cicsProgramName="DEACCT" cicsCommareaLen="120" transactionMode="automatic" messageDomainProperty="DFDL" messageTypeProperty="{}:WEBDEACT2PARAMETERS">
+        <translation xmi:type="utility:ConstantString" string="CICS DEACCT"/>
+      </nodes>
+      <nodes xmi:type="com_financialandrisk_errorhandler_CommonCICSErrorHandler.subflow:FCMComposite_1" xmi:id="FCMComposite_1_4" location="430,334">
+        <translation xmi:type="utility:ConstantString" string="CommonCICSErrorHandler"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="502,236" computeExpression="esql://routine/Accounts#Accounts_v3_Update_CallCICSDEACCT_TrackErrors.Main">
+        <translation xmi:type="utility:ConstantString" string="TrackErrors"/>
+      </nodes>
+      <nodes xmi:type="com_financialandrisk_messageutils_GetAndTrackCICSMessages.subflow:FCMComposite_1" xmi:id="FCMComposite_1_5" location="580,330">
+        <translation xmi:type="utility:ConstantString" string="GetAndTrackCICSMessages"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_6" location="728,330" computeExpression="esql://routine/Accounts#CreateAccount_BuildJSONResponse.Main">
+        <translation xmi:type="utility:ConstantString" string="BuildJSONResponse"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.error" targetTerminalName="InTerminal.Input2"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.timeout" targetTerminalName="InTerminal.Input3"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_2" sourceNode="InTerminal.Input" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="OutTerminal.Output" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.Input"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_9" targetNode="FCMComposite_1_1" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="OutTerminal.Output" sourceNode="FCMComposite_1_6" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+    </composition>
+    <propertyOrganizer/>
+    <stickyBoard/>
+  </eClassifiers>
+</ecore:EPackage>

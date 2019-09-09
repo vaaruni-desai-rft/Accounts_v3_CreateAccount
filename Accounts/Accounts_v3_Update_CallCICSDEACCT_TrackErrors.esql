@@ -1,0 +1,52 @@
+BROKER SCHEMA Accounts
+PATH com.financialandrisk.messageutils;
+
+CREATE COMPUTE MODULE Accounts_v3_Update_CallCICSDEACCT_TrackErrors
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot = InputRoot;
+		SET OutputLocalEnvironment = InputLocalEnvironment;		
+		DECLARE rEnv,rErrItem REFERENCE TO Environment.Variables;
+		
+		-- Checking for the CICS Error response for Update/Create/Delete Operations
+		IF InputRoot.DFDL.WEBDEACT2PARAMETERS.DE_COMM_AREA.DE_USER_INFO.DE_ERROR_CODE > ' ' THEN
+			-- DB2 & FirmNo details needed when calling SPROC to get error details
+			DECLARE rLEContext REFERENCE TO InputLocalEnvironment.Variables.TRConfig.Context;
+			SET OutputLocalEnvironment.DB2Schema 		= rLEContext.DB2HOSTSchema;
+			SET OutputLocalEnvironment.DB2JdbcProvider 	= rLEContext.DB2HOSTConfigurableServiceName; 
+			SET rEnv.FirmNo								= rLEContext.BetaFirmNumber;
+			
+			DECLARE rResult REFERENCE TO InputRoot.DFDL.WEBDEACT2PARAMETERS.DE_COMM_AREA.DE_USER_INFO;
+			
+			-- Create error list
+			CREATE FIELD rEnv.ErrorList IDENTITY (JSON.Array)ErrorList;
+			
+			X:WHILE LASTMOVE(rResult) DO
+				IF rResult.DE_ERROR_CODE > '' THEN
+					--CALL CreateErrorList(rResultTable,rEnv,'TRALUPDT');
+					CREATE LASTCHILD OF rEnv.ErrorList AS rErrItem NAME 'Item';
+					SET rErrItem.RETURN_APP_CODE 	= 'MDRO';
+					SET rErrItem.RETURN_CODE 		= rResult.DE_ERROR_CODE;
+					SET rErrItem.RETURN_MSG_IND		= rResult.DE_RETURN_MSG_IND;
+				ELSE 
+					LEAVE X;					
+				END IF;
+			END WHILE X;
+			
+			-- CICS Failure Response - Control to SPROC to get error details
+			PROPAGATE TO TERMINAL 'out1';
+			RETURN FALSE;
+		END IF;
+		
+		-- Build Response properties if success
+		CALL BuildJSONResponseProperties(OutputRoot,Environment);
+		-- CICS Success Response - Control sends out of the flow with out making call to SPROC
+		SET OutputRoot.DFDL = NULL;
+		--CALL CleanUpEnvironment(rEnv);
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+
+

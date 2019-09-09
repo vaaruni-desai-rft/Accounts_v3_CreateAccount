@@ -1,0 +1,39 @@
+BROKER SCHEMA Accounts
+PATH com.thomsonreuters.enumtrans,com.financialandrisk.messageutils;
+
+CREATE COMPUTE MODULE CreateAccount_BuildJSONResponse
+	
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CALL CreateAndInitResponseHeader(InputRoot, OutputRoot, Environment, 'FAILURE', FALSE);
+		CALL ProcessErrorResponse(InputRoot,Environment,'DEACT2');
+		CALL CleanUpEnvironment(Environment.Variables);
+		RETURN TRUE;
+	END;
+
+END MODULE;
+
+CREATE PROCEDURE ProcessErrorResponse(IN rInput REFERENCE,IN rEnv REFERENCE,IN operation CHARACTER)
+BEGIN
+
+	DECLARE rDbErrRef REFERENCE TO rInput.XMLNSC.DBResultSet.Cursor1.Row;
+
+	X: WHILE LASTMOVE(rDbErrRef)DO
+		IF rDbErrRef.APP_RETURN_CODE >'' THEN
+			CALL TrackSourceMessage(rEnv,'CICS',operation,rDbErrRef.APP_RETURN_CODE,rDbErrRef.MESSAGE,rDbErrRef.MESSAGE_IND);
+			MOVE rDbErrRef NEXTSIBLING;
+		ELSE
+			LEAVE X;
+		END IF;
+	END WHILE X;
+END;
+
+CREATE PROCEDURE CleanUpEnvironment(IN rInput REFERENCE)
+	BEGIN
+		DELETE FIELD rInput.RequestHeader;
+		DELETE FIELD rInput.TRConfig;
+		DELETE FIELD rInput.FirmNo;
+		DELETE FIELD rInput.HTTPInputHeader ;
+		DELETE FIELD rInput.ErrMsg ;
+		DELETE FIELD rInput.ErrCode;
+END;

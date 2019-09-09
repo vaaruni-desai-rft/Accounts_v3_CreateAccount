@@ -1,0 +1,27 @@
+
+
+Importing file: C:\Users\vdesaiadmin\git\Accounts_v2\Accounts_v2\Accounts.wsdl
+
+The WSDL import will proceed with bindings AccountsSOAP.
+Creating wsdl schema document for file:///C:/Users/vdesaiadmin/git/Accounts_v2/Accounts_v2/Accounts.wsdl.
+Parsing wsdl binding {https://services.wealth.thomsonreuters.com/Accounts/v2/}AccountsSOAP.
+Parsing wsdl binding input GetAccountEntity.
+Parsing wsdl binding output GetAccountEntity.
+Parsing wsdl binding input GetContactInfo.
+Parsing wsdl binding output GetContactInfo.
+Processing doc style for operation GetAccountEntity.
+Processing doc style for operation GetContactInfo.
+Populating WSDL schema Accounts_wsdl.xsd.
+Removing unnecessary import statement with namespace https://services.wealth.thomsonreuters.com/common/entities/v1 from schema /Accounts_v3/Accounts.xsd.  This statement was not resolved and is never used.
+Creating file Accounts_wsdl.xsd in the workspace.
+Creating file /Accounts_v3/Accounts.xsd in the workspace.
+Creating file /Accounts_v3/TRHeader.xsd in the workspace.
+Copying source WSDL Accounts.wsdl to Accounts.wsdl.
+
+Elapsed time processing this message definition file: 0.673 seconds
+Number of warnings for this message definition file: 0
+
+
+Number of files processed: 1
+
+
