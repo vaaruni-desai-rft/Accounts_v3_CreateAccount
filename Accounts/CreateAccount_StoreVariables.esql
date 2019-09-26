@@ -184,11 +184,7 @@ CREATE COMPUTE MODULE CreateAccount_StoreVariables
 --			SET OutParms.ACCT_TYPE  			= phone.Type;
 --			SET OutParms.ACCT_ID  				= person.taxID;
 --			SET OutParms.ACCT2_BIRTHDATE  		= person.dateofBirth;	
---			SET OutParms.ACCT_AVG_PRICEAccount  = jSONInput.automaticallyNetted;
---			--SET OutParms.ACCT-MULTI-CNY-IND 	= acctParms.standingInstructionsList.Item.standingInstructions.type;	
---			--SET OutParms.ACCT-MULTI-CNY-IND 	= acctParms.standingInstructionsList.Item.standingInstructions.dispositionOfStock;
---			--SET OutParms.ACCT-MULTI-CNY-IND 	= acctParms.standingInstructionsList.Item.standingInstructions.dispositionOfCash;
---			SET OutParms.ACCT_INST_OVERRIDE  	= instacct.foreignInstitutionType;	
+--			SET OutParms.ACCT_AVG_PRICEAccount  = jSONInput.automaticallyNetted;SET OutParms.ACCT_INST_OVERRIDE  	= instacct.foreignInstitutionType;	
 --			SET OutParms.ACCT_INST_OVERRIDE  	= instacct.corporationType;
 --			SET OutParms.ACCT_INST_OVERRIDE  	= instacct.generate1099Summary;
 --			--SET OutParms.ACCT_MMFSVCFEE  	= adParms.stateRegistrationOverride;
